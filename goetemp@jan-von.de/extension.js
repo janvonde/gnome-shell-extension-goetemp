@@ -60,7 +60,12 @@ const GoetempTemp = new Lang.Class({
 		verboseInfo: function() {
 			this._refresh();
 			let from = this.from;
-			Main.notify(from);
+			if (from == "") {
+				Main.notify("No timestamp present...");
+			}
+			else {
+				Main.notify(from);
+			}
 		},
 
 
