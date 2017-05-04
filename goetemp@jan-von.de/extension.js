@@ -80,6 +80,8 @@ const GoetempTemp = new Lang.Class({
 		_loadData: function () {
 			let params = {};
 			_httpSession = new Soup.Session();
+			_httpSession.user_agent = 'gnome-shell-extension goetemp via libsoup';
+
 			let message = Soup.form_request_new_from_hash('GET', GOET_URL, params);
 			_httpSession.queue_message(message, Lang.bind(this, function (_httpSession, message) {
 						if (message.status_code !== 200) {
