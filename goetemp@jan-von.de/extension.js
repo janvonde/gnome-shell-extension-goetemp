@@ -40,11 +40,7 @@ const GoetempTemp = new Lang.Class({
 
 
 			// register click-event and run verboseInfo function
-			this.actor.connect('button-press-event', Lang.bind(this, this.verboseInfo));
-
-
-			// initialize from for notification onClick
-			this.from = "";
+			this.actor.connect('button-press-event', Lang.bind(this, this._verboseInfo));
 
 
 			// initialize weatherwarning id and last id sent
@@ -56,16 +52,10 @@ const GoetempTemp = new Lang.Class({
 		},
 
 
-		// refresh data, get timestamp and send notification
-		verboseInfo: function() {
+		// refresh data, send notification
+		_verboseInfo: function() {
 			this._refresh();
-			let from = this.from;
-			if (from == "") {
-				Main.notify("No timestamp present...");
-			}
-			else {
-				Main.notify(from);
-			}
+			Main.notify(this.from);
 		},
 
 
@@ -84,12 +74,14 @@ const GoetempTemp = new Lang.Class({
 
 			let message = Soup.form_request_new_from_hash('GET', GOET_URL, params);
 			_httpSession.queue_message(message, Lang.bind(this, function (_httpSession, message) {
-						if (message.status_code !== 200) {
-							return;
+						if (message.status_code == 200) {
+							let json = JSON.parse(message.response_body.data);
+							this._refreshUI(json);
 						}
-
-						let json = JSON.parse(message.response_body.data);
-						this._refreshUI(json);
+						else {
+							state = { temp:"-/-", from:"Connection error..."}
+							this._refreshUI(state);
+						}
 					}
 				)
 			);
@@ -102,9 +94,14 @@ const GoetempTemp = new Lang.Class({
 			this.buttonText.set_text(txt);
 
 
-			// text that is shown as notification onClick
+			// text that is shown as notification
 			let from = data.from.toString();
-			this.from = 'Wert vom ' + from;
+			if (data.from.toString() == "Connection error...") {
+				this.from = from;
+			}
+			else {
+				this.from = 'Wert vom ' + from;
+			}
 
 
 			// weatherwarning as notification
